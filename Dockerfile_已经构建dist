@@ -1,0 +1,21 @@
+
+FROM 192.168.66.118:5000/nginx/nginx:1.21.5
+
+MAINTAINER lyx
+
+ENV LANG=zh_CN.UTF-8 \
+    LC_ALL=zh_CN.UTF-8
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+WORKDIR /usr/local/tomcat/bin/
+
+ADD dist /opt/bigdata_frontend/dist
+ADD nginx.conf /etc/nginx/conf.d/default.conf
+
+
+CMD nginx -g 'daemon off;'
+EXPOSE 9099
+
