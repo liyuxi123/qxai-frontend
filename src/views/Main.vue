@@ -11,7 +11,7 @@
         <el-main class="no-padding">
           <!-- 路由出口 -->
           <!-- 路由匹配到的组件将渲染在这里 -->
-          <keep-alive :include="['user','ZhuYuanMain','ThridMetrics','MetricsManger']">
+          <keep-alive :include="['user','ZhuYuanMain','ThridMetrics','MetricsManger','NationMetrics']">
             <router-view></router-view>
           </keep-alive>
         </el-main>

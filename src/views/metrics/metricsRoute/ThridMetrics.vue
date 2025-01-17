@@ -19,12 +19,9 @@
 <!--      </el-dropdown>-->
 <!--      <span>版本)</span>-->
 
-      <span>医院国家三甲指标</span>
-  <span v-if="versioninfo.ifupdate" style="font-size: 14px; color: red; font-weight: normal">
-    版本有改动，请务必
-    <button  @click="checkversion" style="font-weight:bolder;background: none; border: none; color: red; padding: 0; margin: 0; font-size: 14px; cursor: pointer; text-decoration: underline;">
-      更新检查
-    </button>！！！
+   <span>{{this.metrics_name}}</span>
+
+   <span  style="font-size: 12px; color: black; font-weight: normal">版本:{{this.versioninfo.version}}
   </span>
 
     </div>
@@ -380,7 +377,8 @@ import {
   getThridMetrics,
   getMetrcisDate,
   getDeptThridMetrics,
-  getMetricsRemarkByIndId
+  getMetricsRemarkByIndId,
+   getVersionCheck
 } from "@/api/metricsServer/metricsAPI";
 
 import * as XLSX from 'xlsx';
@@ -398,6 +396,7 @@ export default {
 
   data() {
     return {
+        metrics_name:'三甲指标',
       tableData: [],
       tableLoading: false,
       table2Loading: false,
@@ -929,24 +928,23 @@ export default {
       });
     },
 
-  checkversion() {
+   async checkversion() {
+    const response = await getVersionCheck(this.metrics_name,false)
+     if (response.data.code === 200&&!response.data.data.versioninfo.isupdate) {
+       this.versioninfo.ifupdate=response.data.data.versioninfo.isupdate
+        this.versioninfo.version=response.data.data.versioninfo.create_time
+
+     }else {
       this.$alert(
-        '<strong>这是 <i>HTML</i> 片段</strong>',
-        '版本有改动',
-        {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: '确定',
-          callback: () => {
-            // 判断用户是否为 admin
-            if (this.user !== 'admin') {
-              this.onConfirm();
-            } else {
-               this.checkversion()
-            }
-          },
-        }
+        '<strong>指标版本错误已被跟新！！ 请联系管理员</strong>',
+        '版本有改动'
       );
+
+     }
     },
+
+
+
     onConfirm() {
       console.log("执行 onConfirm 方法");
       // 在这里编写点击确定后的逻辑
@@ -1024,7 +1022,7 @@ export default {
     })
   },
   mounted() {
-  //  this.checkversion();
+    this.checkversion();
     this.getMetricsRemarkByIndId();
     this.getMetrcisDate().then(() => {
       if (this.dateInfo) {

@@ -1,117 +1,185 @@
 <template>
   <div>
-    <el-button type="info" size="mini" icon="el-icon-download" @click="exportHtml">HTML</el-button>
-    <!-- 隐藏的内容，页面上不显示 -->
-    <div id="remark-content" style="display: none; top: 0px">
-      <div v-for="(data, index) in dialogVisibleRemarkDataList" :key="index">
-        <div style="font-weight: bolder; text-align: center; font-size: 20px">
-          <span>
-            {{ data.indName }}
-            <i style="color: red" class="el-icon-warning-outline"></i>
-          </span>
-        </div>
-        <div style="text-align: right;">
-          <span style="font-size: 15px">
-            <i class="el-icon-s-flag"></i>{{ data.indId }}
-            <i class="el-icon-user-solid"></i>{{ ' ' + data.author }}
-            <i class="el-icon-time"></i>{{ ' ' + data.updateTime }}
-          </span>
-        </div>
-        <div>
-          <span style="font-weight: bolder; color: brown; font-size: 16px">
-            <i class="el-icon-question"></i>{{ data.remarkType }}
-          </span>
-        </div>
-        <div>
-          <span style="font-weight: bolder; font-size: 18px">
-            <i class="el-icon-tickets"></i>
-          </span>
-        </div>
-        <div>
-          <div v-html="data.remark"></div>
-        </div>
-        <hr style="margin-top: 20px; margin-bottom: 20px;" />
-      </div>
-    </div>
+    <button @click="startRecognition">开始语音识别</button>
+    <p>识别结果：{{ result }}</p> <!-- 展示识别结果 -->
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+function generateUUID() {
+  return 'xxxx-xxxx-xxxx-xxxx'.replace(/[x]/g, () =>
+      ((Math.random() * 16) | 0).toString(16)
+  );
+}
 
 export default {
   data() {
     return {
-      dialogVisibleRemarkDataList: [], // 存储获取的备注数据
+      ws: null,
+      sn: '',
+      result: '',  // 用于存储识别结果
+      sentenceList: [], // 存储已完成的句子
+      lastResult: '' // 上一个中间结果
     };
   },
-
   methods: {
-    async exportHtml() {
-      try {
-        // 等待数据获取
-        await this.fetchMetricsRemark();
+    // 获取 WebSocket URL
+    async getWebSocketUrl() {
+      this.sn = generateUUID();
+      const wsUrl = `ws://vop.baidu.com/realtime_asr?sn=${this.sn}`;
+      return wsUrl;
+    },
 
-        // 确保数据已加载
-        if (this.dialogVisibleRemarkDataList.length === 0) {
-          alert('没有可导出的数据。');
-          return;
-        }
-
-        // 使用 nextTick 确保数据更新完成后再进行 HTML 导出
-        this.$nextTick(() => {
-          // 先确保所有数据渲染完成
-          setTimeout(() => {
-            // 获取 #remark-content 元素
-            const element = document.getElementById('remark-content');
-
-            // 将该元素显示出来进行导出
-            element.style.display = 'block';
-
-
-
-
-            // 获取元素的外部 HTML 内容
-            const htmlContent = element.outerHTML;
-
-
-            // 创建 Blob 对象，并生成一个 HTML 文件
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-
-            // 创建链接并下载 HTML 文件
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'remark-content.html';
-            link.click();
-
-            // 下载完成后，恢复元素的隐藏
-            element.style.display = 'none';
-
-            // 释放对象 URL
-            URL.revokeObjectURL(url);
-          }, 500); // 延迟 500ms 确保 DOM 渲染完毕
-        });
-      } catch (error) {
-        console.error('导出失败:', error);
+    // 发送启动帧
+    sendStartFrame() {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        const startFrame = {
+          type: 'START',
+          data: {
+            appid: 117006901,
+            appkey: 'Cl3BupsIlLkC0Ue5ONS6darY',
+            dev_pid: 15372, // 中文普通话
+            lm_id: null,
+            cuid: 'cuid-1',
+            format: 'pcm',
+            sample: 16000,
+          },
+        };
+        this.ws.send(JSON.stringify(startFrame));
       }
     },
 
-    async fetchMetricsRemark() {
-      console.log("=======================");
-      const url = 'http://192.168.66.105:8080/qxaillm/metrics/getMetricsRemarkByIndIdList';
-      const params = {
-            indIdList:  ['bn240300101']
-      };
+    // 开始语音识别
+    async startRecognition() {
+      try {
+        const wsUrl = await this.getWebSocketUrl();
+        this.ws = new WebSocket(wsUrl);
+        this.ws.onopen = () => {
+          console.log('WebSocket 连接成功');
+          this.sendStartFrame();
+          this.startMicStreaming();
+        };
+
+        this.ws.onmessage = (event) => {
+          console.log('识别结果:', event.data);
+          const message = JSON.parse(event.data);
+
+          console.log("================",message.result)
+
+          if (message && message.result) {
+            // 判断是中间结果还是完整结果
+            if (message.type === "MID_TEXT") {
+              // 中间结果时，将当前的部分结果与上一个中间结果拼接
+              this.currentMidResult = message.result;
+              // 只显示当前的中间结果
+              this.result = this.sentenceList.join(' ') + ' ' + this.currentMidResult;
+            } else if (message.type === "FIN_TEXT") {
+              // 如果是完整句子，将当前句子添加到 sentenceList
+              this.sentenceList.push(message.result);
+              // 更新结果显示为所有完成的句子
+              this.result = this.sentenceList.join(' ');
+              console.log('当前完成的识别结果:', this.result);
+              // 清空当前的中间结果
+              this.currentMidResult = '';
+            }
+          }
+        };
+
+        this.ws.onerror = (error) => {
+          console.error('WebSocket 错误:', error);
+        };
+
+        this.ws.onclose = () => {
+          console.log('WebSocket 连接关闭');
+        };
+      } catch (error) {
+        console.error('WebSocket 初始化失败:', error);
+      }
+    },
+
+    // 在麦克风流处理时进行采样率转换并发送到 WebSocket
+    async startMicStreaming() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('浏览器不支持麦克风流采集');
+        return;
+      }
 
       try {
-        const response = await axios.post(url, params);
-        console.log('接口返回数据:', response.data);
-        this.dialogVisibleRemarkDataList = response.data.data; // 更新数据列表
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // 获取音频流的采样率
+        const sampleRate = audioContext.sampleRate;
+        if (sampleRate !== 16000) {
+          console.warn(`当前音频采样率为 ${sampleRate}Hz，可能与服务端要求不一致`);
+        }
+
+        // 创建 MediaStreamSource 和 ScriptProcessorNode
+        const mediaStreamSource = audioContext.createMediaStreamSource(stream);
+        const processor = audioContext.createScriptProcessor(4096, 1, 1); // 4096 为缓冲区大小
+
+        // 处理音频数据
+        processor.onaudioprocess = (event) => {
+          const inputBuffer = event.inputBuffer.getChannelData(0); // 获取音频数据（Float32Array）
+
+          // 如果采样率不是 16000 Hz，进行重采样
+          let processedBuffer = inputBuffer;
+          if (sampleRate !== 16000) {
+            processedBuffer = this.resampleAudio(inputBuffer, sampleRate, 16000);
+          }
+
+          // 将音频数据转换为 Int16 格式并发送到 WebSocket
+          const int16ArrayBuffer = this.float32ToInt16(processedBuffer);
+          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(int16ArrayBuffer); // 发送二进制数据
+          } else {
+            console.warn('WebSocket 连接已断开，无法发送音频数据');
+          }
+        };
+
+        mediaStreamSource.connect(processor);
+        processor.connect(audioContext.destination); // 激活音频处理链
+        console.log('麦克风音频处理已启动');
       } catch (error) {
-        console.error('接口调用失败:', error);
+        console.error('麦克风访问失败:', error);
       }
+    },
+
+    // 手动重采样函数
+    resampleAudio(inputBuffer, originalSampleRate, targetSampleRate) {
+      const resampledLength = Math.round(inputBuffer.length * targetSampleRate / originalSampleRate);
+      const resampledBuffer = new Float32Array(resampledLength);
+
+      for (let i = 0; i < resampledLength; i++) {
+        const sampleIndex = i * originalSampleRate / targetSampleRate;
+        const sampleIndexInt = Math.floor(sampleIndex);
+        const fractionalPart = sampleIndex - sampleIndexInt;
+
+        // 线性插值
+        if (sampleIndexInt + 1 < inputBuffer.length) {
+          resampledBuffer[i] = inputBuffer[sampleIndexInt] * (1 - fractionalPart) +
+              inputBuffer[sampleIndexInt + 1] * fractionalPart;
+        } else {
+          resampledBuffer[i] = inputBuffer[sampleIndexInt];
+        }
+      }
+
+      return resampledBuffer;
+    },
+
+    // 将 Float32 数据转换为 Int16 数据
+    float32ToInt16(buffer) {
+      const int16Array = new Int16Array(buffer.length); // 创建 Int16Array
+      for (let i = 0; i < buffer.length; i++) {
+        const s = Math.max(-1, Math.min(1, buffer[i])); // 限制在 [-1, 1] 范围内
+        int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7fff; // 转换为 Int16 格式
+      }
+      return int16Array.buffer; // 返回 ArrayBuffer 格式，以便发送 WebSocket
     },
   },
 };
 </script>
+
+<style scoped>
+/* 样式代码 */
+</style>

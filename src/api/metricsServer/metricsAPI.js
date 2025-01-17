@@ -40,13 +40,13 @@ export const getMetricByIndId = (indId) => {
 
 
 export const getThridMetrics = (year = '', month = '', quarter = '', stage = '') => {
-    return apiHttp.post('/metrics/getThridMetrics', {
+    return apiHttp.post('/metrics/getThirdMetrics', {
         year, month, quarter, stage,
     });
 };
 
 export const getMetrcisDate = () => {
-    return apiHttp.post('/metrics/getMetrcisDate');
+    return apiHttp.post('/metrics/getThirdMetricsDate');
 };
 
 
@@ -60,7 +60,7 @@ export const runSql = (sql = '', currentPage = 1, pageSize = 20) => {
 
 
 export const getDeptThridMetrics = (dataId = '', year = '', month = '', quarter = '', stage = '') => {
-    return apiHttp.post('/metrics/getDeptThridMetrics', {
+    return apiHttp.post('/metrics/getDeptThirdMetrics', {
         dataId,
         year,
         month,
@@ -90,3 +90,36 @@ export const deleteRemarkByIndId = (options) => {
 export const getMetricsRemarkByIndIdList = (options) => {
     return apiHttp.post('/metrics/getMetricsRemarkByIndIdList', options);
 };
+
+
+
+
+
+
+export const getNationMetrics = (year = '', month = '', quarter = '', stage = '') => {
+    return apiHttp.post('/metrics/getKpiMetrics', {
+        year, month, quarter, stage,
+    });
+};
+
+export const getNationDate = () => {
+    return apiHttp.post('/metrics/getKpiMetricsDate');
+};
+
+export const getDeptNationMetrics = (dataId = '', year = '', month = '', quarter = '', stage = '') => {
+    return apiHttp.post('/metrics/getDeptKpiMetrics', {
+        dataId,
+        year,
+        month,
+        quarter,
+        stage,
+    });
+}
+
+
+export const getVersionCheck = (name = '', updateflag =false) => {
+    return apiHttp.post('/metrics/versionCheck', {
+        name,
+        updateflag
+    });
+}
