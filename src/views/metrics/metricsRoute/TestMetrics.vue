@@ -23,7 +23,7 @@ export default {
     };
   },
   methods: {
-    // 获取 WebSocket URL
+    // 获取WebSocket URL
     async getWebSocketUrl() {
       this.sn = generateUUID();
       const wsUrl = `ws://vop.baidu.com/realtime_asr?sn=${this.sn}`;

@@ -1,4 +1,6 @@
 # my-app
+## 清除 npm 缓存
+npm cache clean --force
 
 ## Project setup
 ```
