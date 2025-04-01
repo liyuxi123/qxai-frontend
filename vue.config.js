@@ -46,7 +46,14 @@ module.exports = defineConfig({
         languages: ['sql'] // 指定需要加载的语言
       }),
     ],
-  }
+
+       cache: {
+      type: 'filesystem', // 启用文件系统缓存
+    },
+  },
+  // 生产环境优化
+  productionSourceMap: false, // 关闭生产环境的 source map
+  parallel: true,
 
 
 

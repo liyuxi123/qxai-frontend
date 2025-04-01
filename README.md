@@ -2,6 +2,9 @@
 ## 清除 npm 缓存
 npm cache clean --force
 
+```
+npm run clean
+```
 ## Project setup
 ```
 npm install
