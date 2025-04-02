@@ -34,6 +34,13 @@ module.exports = defineConfig({
         pathRewrite: { '^/api': '' },   //注意这个！！！！！！！！！！！！！！！！！！！！
       },
 
+      '/QxAIConsulation':{
+        target: 'http://192.168.66.172:9101/api',
+        changeOrigin: true,
+        pathRewrite: { '^/QxAIConsulation':  '' },   //注意这个！！！！！！！！！！！！！！！！！！！！
+      },
+
+
 
     }
   },

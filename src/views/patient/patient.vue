@@ -109,7 +109,7 @@
 
 
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
-import {patientSearch , getDeptList} from '@/api/patient/patientAPI'
+import {patientSearch , getDeptList} from  '@/api/patient/patientAPI'
 
 export default {
   components: {

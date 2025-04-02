@@ -50,6 +50,19 @@ export default {
                                 },
                             ]
                         },
+
+                            {
+                            label: '大模型管理',
+                            children: [
+                                {
+                                    path: '/Prompt',
+                                    name: 'Prompt',
+                                    label: 'prompt管理',
+                                    url: 'ai/Prompt.vue',
+                                },
+                            ]
+                        },
+
                         {
                             path: '/mall',
                             name: 'mall',

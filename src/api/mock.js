@@ -6,6 +6,7 @@ import testApi from './testServer/mockServerData/testMockData'
 
 import metricsMockData from './metricsServer/mockData/metricsMockData'
 import loginMockData from './loginServer/mockData/permission'
+import promptServer from "@/api/AIServer/PromptData";
 
 import thridMetricsMockData from './metricsServer/ThridMetrics/ThridMetricsMockData'
 
@@ -31,7 +32,7 @@ Mock.mock(/\/test\/patientInfo\/searchDept\?*/, 'get', testApi.getDeptListByGet)
 //
 
 // //login模块 拦截
- //Mock.mock('/api/login/getMenu', 'post', loginMockData.getMenu)
+ Mock.mock('/api/login/getMenu', 'post', loginMockData.getMenu)
 // //
 // //metrics模块 拦截
 // Mock.mock('/api/metrics/searchMetricsList', 'post', metricsMockData.searchMetrics);
@@ -48,15 +49,18 @@ Mock.mock(/\/test\/patientInfo\/searchDept\?*/, 'get', testApi.getDeptListByGet)
 //
 
 // //指标时间获取
-// Mock.mock('/api/metrics/getMetrcisDate', 'post', dateMockData.getMetrcisDate)
+ //Mock.mock('/api/metrics/getMetrcisDate', 'post', dateMockData.getMetrcisDate)
 // //三甲指标获取
  //Mock.mock('/api/metrics/getThridMetrics', 'post', thridMetricsMockData.getThridMetrics)
-// //三甲指标k科室数据获取
-// Mock.mock('/api/metrics/getDeptThridMetrics', 'post', thridMetricsMockData.getDeptThridMetrics)
+ //Mock.mock('/api/metrics/getDeptThridMetrics', 'post', thridMetricsMockData.getDeptThridMetrics)
 
 // //获取指标备注
 //Mock.mock('/api/metrics/getMetricsRemarkByIndId', 'post', metricsMockData.getMetricsRemarkByIndId);
 //更新或者插入指标备注
 //Mock.mock('/api/metrics/updateMetricsRemark', 'post', metricsMockData.updateMetricsRemark);
 ///删除指标备注
-//Mock.mock('/api/metrics/deleteRemarkByIndId', 'post', metricsMockData.deleteRemarkByIndId);
+//Mock.mock('/QxAIConsulation/metrics/deleteRemarkByIndId', 'post', metricsMockData.deleteRemarkByIndId);
+
+//Mock.mock('/QxAIConsulation/aiqa/getSystemConfigList', 'post', promptServer.getPromptdata);
+
+

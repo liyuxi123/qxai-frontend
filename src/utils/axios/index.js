@@ -5,10 +5,15 @@ const apiHttp = createHttpInstance(process.env.VUE_APP_BASE_API_URL);  //主程�
 
 const aiHttp = createHttpInstance(process.env.VUE_APP_BAIDU_API_AI_URL);  //AI百度
 
+const QxAIConsulationHttp = createHttpInstance(process.env.VUE_APP_QxAIConsulation_API_URL);  //主程序
+
 const testHttp = createHttpInstance(process.env.VUE_APP_TEST_API_TEST_URL);  //测试
 
 
 
 
 
-export {aiHttp, testHttp,apiHttp};
+
+
+
+export {aiHttp, testHttp,apiHttp,QxAIConsulationHttp};
