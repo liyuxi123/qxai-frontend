@@ -32,7 +32,7 @@ Mock.mock(/\/test\/patientInfo\/searchDept\?*/, 'get', testApi.getDeptListByGet)
 //
 
 // //login模块 拦截
- Mock.mock('/api/login/getMenu', 'post', loginMockData.getMenu)
+ //Mock.mock('/api/login/getMenu', 'post', loginMockData.getMenu)
 // //
 // //metrics模块 拦截
 // Mock.mock('/api/metrics/searchMetricsList', 'post', metricsMockData.searchMetrics);
